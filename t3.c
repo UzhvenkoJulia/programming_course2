@@ -263,53 +263,56 @@ void task7_a() {
 // Завдання 7(b): Розв'язання рівняння четвертого ступеня
 void task7_b() {
     double a, b, c;
+    double x1, x2, D;
+    double EPS = 1e-8;
+    int flag;
+    printf("ax^4+bx^2+c.\n Enter value a, b, c = ");
+    scanf("%lf %lf %lf", &a, &b, &c);
+    D = (b*b) - (4*a*c);
+    flag = 1;
 
-    printf("\nExercise 7(b): Solving a quadratic equation\n");
-    printf("Enter the coefficients a, b, c for the equation ax^4 + bx^2 + c = 0:\n");
-    printf("a = ");
-    scanf("%lf", &a);
-    printf("b = ");
-    scanf("%lf", &b);
-    printf("c = ");
-    scanf("%lf", &c);
-
-    if (a == 0) {
-        printf("This is not a quadratic equation (a cannot be 0)\n");
-    } else {
-        double D = b * b - 4 * a * c;
-        if (D < 0) {
-            printf("The equation has no valid solutions\n");
-        } else {
-            double z1 = (-b + sqrt(D)) / (2 * a);
-            double z2 = (-b - sqrt(D)) / (2 * a);
-
-            if (z1 >= 0) {
-                double x1 = sqrt(z1);
-                double x2 = -sqrt(z1);
-                printf("Junctions: x1 = %.2lf, x2 = %.2lf\n", x1, x2);
+    if (fabs(a) < EPS) {
+        // a == 0, bx^2 + c = 0
+        if (fabs(b) < EPS) {
+            if (fabs(c) < EPS) {
+                printf("Infinite solutions (0 = 0)\n");
             } else {
-                printf("z1 = %.2lf has no valid roots\n", z1);
+                printf("There are no solutions (b = 0, c != 0)!\n");
             }
-
-            /*if (zero(b) && !zero(a) && !zero(c)){
-            double x = - c / a;
-            if (x > 0){
-            double x1 = pow(x1, 1/4);
-            double x2 = - pow(x2, 1/4);
-            printf("x1 = %lf, x2 = %lf \n", x1, x2);
-            }*/
-
-            if (z2 >= 0) {
-                double x3 = sqrt(z2);
-                double x4 = -sqrt(z2);
-                printf("Junctions: x3 = %.2lf, x4 = %.2lf\n", x3, x4);
+        } else {
+            // bx^2 + c = 0
+            x1 = -c / b;
+            if (x1 < 0) {
+                printf("There are no solutions!\n");
             } else {
-                printf("z2 = %.2lf has no valid roots\n", z2);
+                printf("x1 = %.4lf, x2 = %.4lf\n", sqrt(x1), -sqrt(x1));
+            }
+        }
+    } else {
+        if (D < 0) {
+            printf("There are no solutions!\n");
+            flag = 0;
+        } else if (fabs(D) < EPS) {
+            x1 = -b / (2 * a);
+        } else {
+            x1 = (-b - sqrt(D)) / (2 * a);
+            x2 = (-b + sqrt(D)) / (2 * a);
+        }
+
+        if (flag == 1) {
+            if (x1 >= 0 && x2 >= 0) {
+                printf("x1 = %.4lf, x2 = %.4lf, x3 = %.4lf, x4 = %.4lf\n",
+                       sqrt(x1), -sqrt(x1), sqrt(x2), -sqrt(x2));
+            } else if (x1 < 0 && x2 < 0) {
+                printf("There are no solutions!\n");
+            } else if (x1 < 0 && x2 > 0) {
+                printf("x1 = %.4lf, x2 = %.4lf\n", sqrt(x2), -sqrt(x2));
+            } else if (x1 > 0 && x2 < 0) {
+                printf("x1 = %.4lf, x2 = %.4lf\n", sqrt(x1), -sqrt(x1));
             }
         }
     }
 }
-
 /*if (d > 0){
 double y1 = (-b + sqrt(d)) / (2 * a);
 double y2 = (-b - sqrt(d)) / (2 * a);
