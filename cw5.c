@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <limits.h>
 
 void task1();
 int task2_a(int n);
@@ -7,7 +8,7 @@ void task2_b();
 void task2_c();
 void task2_d();
 void task3();
-long long factorial(int n);
+unsigned long long factorial(int n);
 void task4_a();
 void task4_b();
 void task5();
@@ -135,11 +136,16 @@ void task3() {
     printf("Maximum steps: %d\n", max_of_steps);
 }
 
-long long factorial(int n) {
+unsigned long long factorial(int n) {
+    if (n < 0) return 0; // не може бути факторіал від -(числа)
     if (n == 0 || n == 1) return 1;
 
-    long long fact = 1;
+    unsigned long long fact = 1;
     for (int i = 2; i <= n; i++) {
+        if (fact > ULLONG_MAX / i) {
+            printf("factorial goes beyond 2^64 for n = %d\n", n);
+            return 0;
+        }
         fact *= i;
     }
     return fact;
@@ -153,7 +159,12 @@ void task4_a() {
     scanf("%d", &n);
 
     for (int i = 1; i <= n; i++) {
-        P_n *= (1 + 1.0 / factorial(i));
+        unsigned long long fact = factorial(i);
+        if (fact == 0) {
+            printf("factorial exceeds limit for n = %d\n", i);
+            return; // завершити, якщо факторіал не може бути обчислений
+        }
+        P_n *= (1 + 1.0 / fact);
     }
 
     printf("P_n = %lf\n", P_n);
