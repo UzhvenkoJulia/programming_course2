@@ -1,24 +1,31 @@
 #include <stdio.h>
 
-// функція для обчислення факторіалу
-unsigned long long factorial(int n) {
-    unsigned long long fact = 1;
-    for (int i = 1; i <= n; i++) {
-        fact *= i;
-    }
-    return fact;
-}
-
-// функція для обчислення степеня x^k
+// більш ефективне, швидке піднесення до степеня
 double power(double x, int k) {
-    double result = 1;
-    for (int i = 0; i < k; i++) {
-        result *= x;
+    double result = 1.0;
+    while (k > 0) {
+        if (k % 2 == 1) {
+            result *= x;  // k непарне, множимо на x
+        }
+        x *= x;  // x до квадрата
+        k /= 2;  
     }
     return result;
 }
 
-// осн ф для обчислення x_k = (x^k) / k!
+// обчислення факторіалу з обмеженням на переповнення
+double factorial(int n) {
+    double fact = 1.0;
+    for (int i = 1; i <= n; i++) {
+        fact *= i;
+        if (fact > 1e16) { // факторіал занадто великий -> зупиняємося
+            return fact;  // не обчисл надто великі значення
+        }
+    }
+    return fact;
+}
+
+// обчислення x_k = (x^k) / k!
 double calculate_term(double x, int k) {
     return power(x, k) / factorial(k);
 }
