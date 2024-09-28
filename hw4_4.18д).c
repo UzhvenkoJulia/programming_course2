@@ -8,7 +8,7 @@ double power(double x, int k) {
             result *= x;  // k непарне, множимо на x
         }
         x *= x;  // x до квадрата
-        k /= 2;  
+        k /= 2;
     }
     return result;
 }
@@ -24,6 +24,21 @@ double factorial(int n) {
     }
     return fact;
 }
+
+/*double calculate_term(double x, int k) {
+double term = 1.0; // x^0 / 0! = 1
+double current_power = 1.0; // x^0 = 1
+double current_factorial = 1.0; // 0! = 1
+
+// x^k / k! в одному циклі
+for (int i = 1; i <= k; i++) {
+current_power *= x;
+current_factorial *= i;    // поступово * i (факторіал)
+term = current_power / current_factorial;
+}
+
+return term;
+}*/
 
 // обчислення x_k = (x^k) / k!
 double calculate_term(double x, int k) {
