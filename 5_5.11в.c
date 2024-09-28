@@ -21,7 +21,7 @@ double factorial(int n) {
     }
     double result = 1.0;
     for (int i = 2; i <= n; i++) {
-        result *= i; 
+        result *= i;
     }
     return result;
 }
@@ -47,8 +47,13 @@ int main() {
     }
 
     double S_n = 0.0;
+    double current_factorial = 1.0; // для зберігання k!
+
     for (int k = 1; k <= n; k++) {
-        S_n += (double)factorial(k) / a[k]; // + k! / a_k до суми
+        if (k > 1) {
+            current_factorial *= k; // оновити факторіал без повторного обчислення
+        }
+        S_n += current_factorial / a[k]; // k! / a_k до суми
     }
 
     printf("S_%d = %.6f\n", n, S_n);
