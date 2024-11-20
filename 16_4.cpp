@@ -11,6 +11,9 @@
 
 // Вказівка: інформацію про студентів представити у вигляді масиву. Дані зчитувати з клавіатури.
 
+// To meet the requirement that students should be of 2 different but connected classes, we can refactor the code by separating the Student class into two related classes:
+// one class for handling personal information (Person) and another class for managing academic details and scholarship calculations (StudentDetails).
+
 
 #include <iostream>
 #include <vector>
@@ -18,7 +21,7 @@
 #include <string>
 #include <numeric>
 
-
+// Person class handling personal information
 class Person {
 protected:
     std::string name;
@@ -40,20 +43,18 @@ public:
     }
 };
 
-class Student : public Person {
+// StudentDetails class for academic details
+class StudentDetails {
 private:
-    std::vector<int> grades5; // оцінки за 5-ти бальною шкалою
-    std::vector<int> grades100; // оцінки за 100-бальною шкалою
-    double average5;  // середній бал за 5-ти бальною шкалою
-    double average100; // 100-бальною шкалою
+    std::vector<int> grades5; // 5-point scale grades
+    std::vector<int> grades100; // 100-point scale grades
+    double average5; // average grade for 5-point scale
+    double average100; // average grade for 100-point scale
 
 public:
-    Student(const std::string& name = "", int age = 0)
-        : Person(name, age), average5(0), average100(0) {}
+    StudentDetails() : average5(0), average100(0) {}
 
-    void input() override {
-        Person::input();
-
+    void inputGrades() {
         grades5.resize(5);
         grades100.resize(5);
 
@@ -70,8 +71,7 @@ public:
         calculateAverages();
     }
 
-    void display() const override {
-        Person::display();
+    void displayGrades() const {
         std::cout << "\n5-point grades: ";
         for (int grade : grades5) {
             std::cout << grade << " ";
@@ -94,7 +94,29 @@ private:
     }
 };
 
-// визначення стипендій
+// Combined Student class that inherits from Person and includes StudentDetails
+class Student : public Person {
+private:
+    StudentDetails details;
+
+public:
+    Student(const std::string& name = "", int age = 0) : Person(name, age) {}
+
+    void input() override {
+        Person::input();
+        details.inputGrades();
+    }
+
+    void display() const override {
+        Person::display();
+        details.displayGrades();
+    }
+
+    double getAverage5() const { return details.getAverage5(); }
+    double getAverage100() const { return details.getAverage100(); }
+};
+
+// Scholarship calculation function
 void calculateScholarships(const std::vector<Student>& students) {
     std::cout << "\nScholarships based on old system:\n";
     for (const auto& student : students) {
@@ -111,8 +133,9 @@ void calculateScholarships(const std::vector<Student>& students) {
         averages.push_back(student.getAverage100());
     }
 
-    // сортування для визначення 40% найкращих студентів
+    // Sort to determine top 40% of students
     std::sort(averages.begin(), averages.end(), std::greater<>());
+
     size_t top40Percent = averages.size() * 0.4;
 
     for (size_t i = 0; i < students.size(); ++i) {
@@ -144,4 +167,5 @@ int main() {
 
     calculateScholarships(students);
 
+    return 0;
 }
