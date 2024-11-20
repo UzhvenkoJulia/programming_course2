@@ -22,21 +22,25 @@
 // Забезпечити ініціювання помилки при неправильному введенні та ро боті з рядками та роботі з файлами.
 
 
+// Замість char використовувати шаблонний тип T для створення класу, що підтримує будь-який тип, наприклад, char, int, std::string..
+// Внести відповідні зміни в контейнер std::unordered_set, щоб він використовував шаблонний тип T замість конкретного типу char.
+
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <unordered_set> // -  заголовковий файл у C++, який надає можливість використовувати контейнер std::unordered_set. Цей контейнер зберігає унікальні значення, забезпечуючи швидкий доступ до них за допомогою хешування.
+#include <unordered_set> // - заголовковий файл у C++, який надає можливість використовувати контейнер std::unordered_set.
 #include <algorithm>
 #include <stdexcept> // - містить визначення винятків (exception classes) для обробки помилок.
 
+template <typename T> // шаблон класу для підтримки будь-якого типу
 class StringHandler {
 private:
-    std::unordered_set<char> allowedChars; // Множина допустимих символів
-    std::string inputString;               // Введений рядок
+    std::unordered_set<T> allowedChars; // множина допустимих символів
+    std::vector<T> inputString;          // введений рядок (вектор, щоб підтримувати будь-які типи)
 
     // перевіряє, чи всі символи в рядку є допустимими
-    bool isValidString(const std::string& str) {
-        for (char ch : str) {
+    bool isValidString(const std::vector<T>& str) {
+        for (const T& ch : str) {
             if (allowedChars.find(ch) == allowedChars.end()) {
                 return false;
             }
@@ -46,19 +50,33 @@ private:
 
 public:
     // конструктор
-    StringHandler(const std::vector<char>& allowed)
+    StringHandler(const std::vector<T>& allowed)
         : allowedChars(allowed.begin(), allowed.end()) {}
 
     void inputFromConsole() {
-        std::cout << "Enter a string: ";
-        std::getline(std::cin, inputString);
+        std::cout << "Enter a string (use space as delimiter for multiple elements): ";
+        std::string line;
+        std::getline(std::cin, line);
+        inputString.clear();
+        
+        // розділення введеного рядка за пробілами на елементи типу T
+        std::istringstream iss(line);
+        T item;
+        while (iss >> item) {
+            inputString.push_back(item);
+        }
+
         if (!isValidString(inputString)) {
             throw std::invalid_argument("Input contains invalid characters");
         }
     }
 
     void outputToConsole() const {
-        std::cout << "Current string: " << inputString << std::endl;
+        std::cout << "Current string: ";
+        for (const T& ch : inputString) {
+            std::cout << ch << " ";
+        }
+        std::cout << std::endl;
     }
 
     void inputFromFile(const std::string& filename) {
@@ -66,8 +84,14 @@ public:
         if (!file.is_open()) {
             throw std::ios_base::failure("Failed to open file");
         }
-        std::getline(file, inputString);
+
+        inputString.clear();
+        T item;
+        while (file >> item) {
+            inputString.push_back(item);
+        }
         file.close();
+        
         if (!isValidString(inputString)) {
             throw std::invalid_argument("File contains invalid characters");
         }
@@ -78,40 +102,45 @@ public:
         if (!file.is_open()) {
             throw std::ios_base::failure("Failed to open file");
         }
-        file << inputString;
+        
+        for (const T& ch : inputString) {
+            file << ch << " ";
+        }
         file.close();
     }
 
     // додавання допустимого символу
-    void addAllowedChar(char ch) {
+    void addAllowedChar(const T& ch) {
         allowedChars.insert(ch);
     }
 
     // видалення допустимого символу
-    void removeAllowedChar(char ch) {
+    void removeAllowedChar(const T& ch) {
         allowedChars.erase(ch);
     }
 
     // отримання довжини рядка
     size_t getLength() const {
-        return inputString.length();
+        return inputString.size();
     }
 
     // конкатенація рядків
-    void concatenate(const StringHandler& other) {
-        std::unordered_set<char> resultAllowedChars;
-        for (char ch : allowedChars) {
+    void concatenate(const StringHandler<T>& other) {
+        std::unordered_set<T> resultAllowedChars;
+        for (const T& ch : allowedChars) {
             if (other.allowedChars.find(ch) != other.allowedChars.end()) {
                 resultAllowedChars.insert(ch);
             }
         }
         allowedChars = resultAllowedChars;
 
-        std::string newString = inputString + other.inputString;
-        std::string validString;
-        for (char ch : newString) {
+        std::vector<T> newString = inputString;
+        newString.insert(newString.end(), other.inputString.begin(), other.inputString.end());
+
+        std::vector<T> validString;
+        for (const T& ch : newString) {
             if (allowedChars.find(ch) != allowedChars.end()) {
-                validString += ch;
+                validString.push_back(ch);
             }
         }
         inputString = validString;
@@ -120,8 +149,8 @@ public:
     // отримання хешу рядка (проста хеш-функція)
     size_t hash() const {
         size_t hashValue = 0;
-        for (char ch : inputString) {
-            hashValue = hashValue * 31 + ch;
+        for (const T& ch : inputString) {
+            hashValue = hashValue * 31 + std::hash<T>()(ch); // використовуємо стандартний хеш-функцію для T
         }
         return hashValue;
     }
@@ -129,9 +158,9 @@ public:
 
 int main() {
     try {
-        // допустимі символи
+        // допустимі символи для типу char
         std::vector<char> allowed = {'a', 'b', 'c', 'd', 'e', 'f', 'g'};
-        StringHandler strHandler1(allowed);
+        StringHandler<char> strHandler1(allowed);
 
         strHandler1.inputFromConsole();
         strHandler1.outputToConsole();
@@ -144,7 +173,7 @@ int main() {
         strHandler1.inputFromFile("output.txt");
         strHandler1.outputToConsole();
 
-        StringHandler strHandler2({'a', 'b', 'c', 'h'});
+        StringHandler<char> strHandler2({'a', 'b', 'c', 'h'});
         strHandler2.inputFromConsole();
         strHandler1.concatenate(strHandler2);
         strHandler1.outputToConsole();
@@ -154,7 +183,6 @@ int main() {
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-
 }
 
-// Хеш-функція реалізована як проста множення з коефіцієнтом (31).
+// Хеш-функція реалізована як проста множення з коефіцієнтом (31)
